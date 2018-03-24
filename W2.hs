@@ -308,17 +308,17 @@ map2 f (a:as) (b:bs) = f a b : map2 f as bs
 -- your interpreter correctly but weirdly :(
 
 interpreter :: [String] -> [String]
-interpreter xs = interpreter' xs 0 0
+interpreter = interpreter' 0 0
 
-interpreter' :: [String] -> Int -> Int -> [String]
-interpreter' [] _ _ = []
-interpreter' (cmd:cmds) x y
-    | cmd == "up"      = interpreter' cmds x (y + 1)
-    | cmd == "down"    = interpreter' cmds x (y - 1)
-    | cmd == "right"   = interpreter' cmds (x + 1) y
-    | cmd == "left"    = interpreter' cmds (x - 1) y
-    | cmd == "printX"  = show x : interpreter' cmds x y
-    | cmd == "printY"  = show y : interpreter' cmds x y
+interpreter' :: Int -> Int -> [String] -> [String]
+interpreter' _ _ [] = []
+interpreter' x y (cmd:cmds)
+    | cmd == "up"      = interpreter' x (y + 1) cmds
+    | cmd == "down"    = interpreter' x (y - 1) cmds
+    | cmd == "right"   = interpreter' (x + 1) y cmds
+    | cmd == "left"    = interpreter' (x - 1) y cmds
+    | cmd == "printX"  = show x : interpreter' x y cmds
+    | cmd == "printY"  = show y : interpreter' x y cmds
     | otherwise        = []
 
 
