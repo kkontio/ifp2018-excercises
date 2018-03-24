@@ -319,6 +319,7 @@ interpreter' (cmd:cmds) x y
     | cmd == "left"    = interpreter' cmds (x - 1) y
     | cmd == "printX"  = show x : interpreter' cmds x y
     | cmd == "printY"  = show y : interpreter' cmds x y
+    | otherwise        = []
 
 
 
