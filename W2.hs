@@ -320,12 +320,3 @@ interpreter' x y (cmd:cmds)
     | cmd == "printX"  = show x : interpreter' x y cmds
     | cmd == "printY"  = show y : interpreter' x y cmds
     | otherwise        = []
-
-
-
-
-
-
-
-
-
