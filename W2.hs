@@ -167,7 +167,7 @@ fromTo n k
 
 -- nope, hold my beer
 sums :: Int -> [Int]
-sums i = map (\x -> sum [1..x]) [1..i] 
+sums i = [sum [1..x] | x <- [1..i]]
 
 -- Ex 13: using list pattern matching and recursion, define a function
 -- mylast that returns the last value of the given list. For an empty
