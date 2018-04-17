@@ -397,4 +397,4 @@ rgb Red = [1,0,0]
 rgb Green = [0,1,0]
 rgb Blue = [0,0,1]
 rgb (Mix a b) = zipWith (\x y -> min 1 $ x + y) (rgb a) (rgb b)
-rgb (Darken d c) = map (\x -> x * (1 - d)) (rgb c)
+rgb (Darken d c) = [x * (1 - d) | x <- rgb c]
