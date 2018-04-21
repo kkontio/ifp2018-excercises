@@ -28,10 +28,10 @@ import Data.List
 -- 3 *! True ==> [True,True,True]
 
 (%$) :: String -> String -> String
-x %$ y = undefined
+x %$ y = x ++ y ++ x
 
 (*!) :: Int -> a -> [a]
-n *! val = undefined
+n *! val = [val | _ <- [1..n]]
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement the function allEqual which returns True if all
@@ -47,7 +47,11 @@ n *! val = undefined
 -- you remove the Eq a => constraint from the type!
 
 allEqual :: Eq a => [a] -> Bool
-allEqual xs = undefined
+allEqual [] = True
+allEqual [x] = True
+allEqual (x:x':xs)
+  | x == x'   = allEqual (x':xs)
+  | otherwise = False
 
 ------------------------------------------------------------------------------
 -- Ex 3: implement the function secondSmallest that returns the second
@@ -60,7 +64,9 @@ allEqual xs = undefined
 -- secondSmallest [5,3,7,2,3,1]  ==>  Just 2
 
 secondSmallest :: Ord a => [a] -> Maybe a
-secondSmallest xs = undefined
+secondSmallest [] = Nothing
+secondSmallest [x] = Nothing
+secondSmallest xs = Just $ head $ drop 1 $ sort xs
 
 ------------------------------------------------------------------------------
 -- Ex 4: Implement the function incrementKey, that takes a list of
@@ -76,8 +82,8 @@ secondSmallest xs = undefined
 --   incrementKey True [(True,1),(False,3),(True,4)] ==> [(True,2),(False,3),(True,5)]
 --   incrementKey 'a' [('a',3.4)] ==> [('a',4.4)]
 
-incrementKey :: k -> [(k,v)] -> [(k,v)]
-incrementKey = undefined
+incrementKey :: (Eq k, Num v) => k -> [(k,v)] -> [(k,v)]
+incrementKey k kvs = map (\(k',v) -> if k' == k then (k',v+1) else (k',v)) kvs
 
 ------------------------------------------------------------------------------
 -- Ex 5: compute the average of a list of values of the Fractional
@@ -90,7 +96,7 @@ incrementKey = undefined
 -- length to a Fractional
 
 average :: Fractional a => [a] -> a
-average xs = undefined
+average xs = sum xs / fromIntegral (length xs) 
 
 ------------------------------------------------------------------------------
 -- Ex 6: define an Eq instance for the type Foo below.
@@ -101,16 +107,19 @@ data Foo = Bar | Quux | Xyzzy
   deriving Show
 
 instance Eq Foo where
-  (==) = error "implement me"
+  Bar   == Bar    = True
+  Quux  == Quux   = True
+  Xyzzy == Xyzzy  = True
+  _     == _      = False
 
 ------------------------------------------------------------------------------
 -- Ex 7: implement an Ord instance for Foo so that Quux < Bar < Xyzzy
 
 instance Ord Foo where
-  compare = error "implement me?"
-  (<=) = error "and me?"
-  min = error "and me?"
-  max = error "and me?"
+  Quux <= _      = True
+  _    <= Xyzzy  = True
+  Bar  <= Bar    = True
+  _    <= _      = False
 
 ------------------------------------------------------------------------------
 -- Ex 8: here is a type for a 3d vector. Implement an Eq instance for it.
@@ -119,7 +128,9 @@ data Vector = Vector Integer Integer Integer
   deriving Show
 
 instance Eq Vector where
-  (==) = error "implement me"
+  Vector x y z == Vector x' y' z'
+    | x == x' && y == y' && z == z' = True
+    | otherwise                     = False
 
 ------------------------------------------------------------------------------
 -- Ex 9: implementa Num instance for Vector such that all the
@@ -135,6 +146,14 @@ instance Eq Vector where
 -- signum (Vector (-1) 2 (-3)) ==> Vector (-1) 1 (-1)
 
 instance Num Vector where
+  Vector x y z + Vector x' y' z' = Vector (x+x') (y+y') (z+z')
+  Vector x y z - Vector x' y' z' = Vector (x-x') (y-y') (z-z')
+  Vector x y z * Vector x' y' z' = Vector (x*x') (y*y') (z*z')
+  abs (Vector x y z) = Vector (abs x) (abs y) (abs z)
+  signum (Vector x y z) = Vector (signum x) (signum y) (signum z)
+  fromInteger i = Vector (fromInteger i) (fromInteger i) (fromInteger i)
+  negate (Vector x y z) = Vector (negate x) (negate y) (negate z)
+
 
 ------------------------------------------------------------------------------
 -- Ex 10: compute how many times each value in the list occurs. Return
@@ -147,7 +166,7 @@ instance Num Vector where
 --   ==> [(3,False),(1,True)]
 
 freqs :: Eq a => [a] -> [(Int,a)]
-freqs xs = undefined
+freqs xs = map (\x -> (sum $ map (\x' -> if x' == x then 1 else 0) xs, x)) $ nub xs
 
 ------------------------------------------------------------------------------
 -- Ex 11: implement an Eq instance for the following binary tree type
@@ -156,7 +175,9 @@ data ITree = ILeaf | INode Int ITree ITree
   deriving Show
 
 instance Eq ITree where
-  (==) = error "implement me"
+  ILeaf       == ILeaf          = True
+  INode x l r == INode y l' r'  = x == y && l == l' && r == r'
+  _           == _              = False
 
 ------------------------------------------------------------------------------
 -- Ex 12: here is a list type parameterized over the type it contains.
@@ -167,7 +188,9 @@ data List a = Empty | LNode a (List a)
   deriving Show
 
 instance Eq a => Eq (List a) where
-  (==) = error "implement me"
+  Empty     == Empty      = True
+  LNode x l == LNode y l' = x == y && l == l'
+  _         == _          = False
 
 ------------------------------------------------------------------------------
 -- Ex 13: start by reading a bit about Functors. A Functor is a thing
@@ -183,7 +206,7 @@ instance Eq a => Eq (List a) where
 --   incrementAll (Just 3.0)  ==>  Just 4.0
 
 incrementAll :: (Functor f, Num n) => f n -> f n
-incrementAll x = undefined
+incrementAll x = fmap (+1) x
 
 ------------------------------------------------------------------------------
 -- Ex 14: below you'll find a type Result that works a bit like Maybe,
@@ -196,13 +219,17 @@ data Result a = MkResult a | NoResult | Failure String
   deriving (Show,Eq)
 
 instance Functor Result where
-  fmap f result = error "implement me"
+  fmap f (MkResult a) = MkResult $ f a
+  fmap _ NoResult = NoResult
+  fmap _ (Failure s) = Failure s
 
 ------------------------------------------------------------------------------
 -- Ex 15: Implement the instance Functor List (for the datatype List
 -- from ex 11)
 
 instance Functor List where
+  fmap _  Empty = Empty
+  fmap f (LNode x l) = LNode (f x) (fmap f l)
 
 ------------------------------------------------------------------------------
 -- Ex 16: Fun a is a type that wraps a function Int -> a. Implement a
@@ -217,6 +244,7 @@ runFun :: Fun a -> Int -> a
 runFun (Fun f) x = f x
 
 instance Functor Fun where
+  fmap f (Fun g) = Fun (f . g)
 
 ------------------------------------------------------------------------------
 -- Ex 17: Define the operator ||| that works like ||, but forces its
@@ -229,7 +257,10 @@ instance Functor Fun where
 --   False ||| undefined ==> an error!
 
 (|||) :: Bool -> Bool -> Bool
-x ||| y = undefined
+x ||| y
+  | y == True = True
+  | x == True = True
+  | otherwise = False
 
 ------------------------------------------------------------------------------
 -- Ex 18: Define the function boolLength, that returns the length of a
@@ -241,7 +272,9 @@ x ||| y = undefined
 -- Huom! length [False,undefined] ==> 2
 
 boolLength :: [Bool] -> Int
-boolLength xs = undefined
+boolLength []         = 0
+boolLength (True:xs)  = 1 + boolLength xs
+boolLength (False:xs) = 1 + boolLength xs
 
 ------------------------------------------------------------------------------
 -- Ex 19: this and the next exercise serve as an introduction for the
@@ -273,7 +306,11 @@ boolLength xs = undefined
 --  (True,True,False)
 
 threeRandom :: (Random a, RandomGen g) => g -> (a,a,a)
-threeRandom g = undefined
+threeRandom g = (a1, a2, a3)
+  where
+    (a1, g2) = random g 
+    (a2, g3) = random g2
+    (a3, _)  = random g3
 
 ------------------------------------------------------------------------------
 -- Ex 20: given a Tree (same type as on Week 3), randomize the
@@ -297,4 +334,8 @@ data Tree a = Leaf | Node a (Tree a) (Tree a)
   deriving Show
 
 randomizeTree :: (Random a, RandomGen g) => Tree b -> g -> (Tree a,g)
-randomizeTree t g = undefined
+randomizeTree Leaf g         = (Leaf, g)
+randomizeTree (Node x l r) g = (Node rnd l' r', g''')
+  where (rnd, g')  = random g
+        (l', g'')  = randomizeTree l g'
+        (r', g''') = randomizeTree r g''
