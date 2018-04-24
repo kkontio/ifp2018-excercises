@@ -57,10 +57,14 @@ allEqual (x:x':xs)
 -- Ex 3: implement the function secondSmallest that returns the second
 -- smallest value in the list, or Nothing if there is no such value.
 --
+-- NB! If the smallest value of the list occurs multiple times, it is
+-- also the second smallest. See third example.
+--
 -- Examples:
 --
 -- secondSmallest [1.0] ==>  Nothing
--- secondSmallest [1,1] ==>  Just 1
+-- secondSmallest [1,2] ==> Just 2
+-- secondSmallest [1,1,2] ==>  Just 1
 -- secondSmallest [5,3,7,2,3,1]  ==>  Just 2
 
 secondSmallest :: Ord a => [a] -> Maybe a
@@ -89,11 +93,14 @@ incrementKey k kvs = map (\(k',v) -> if k' == k then (k',v+1) else (k',v)) kvs
 -- Ex 5: compute the average of a list of values of the Fractional
 -- class.
 --
+-- There is no need to handle the empty list case.
+--
 -- Hint! since Fractional is a subclass of Num, you have all
 -- arithmetic operations available
 --
 -- Hint! you can use the function fromIntegral to convert the list
 -- length to a Fractional
+
 
 average :: Fractional a => [a] -> a
 average xs = sum xs / fromIntegral (length xs) 
@@ -193,13 +200,8 @@ instance Eq a => Eq (List a) where
   _         == _          = False
 
 ------------------------------------------------------------------------------
--- Ex 13: start by reading a bit about Functors. A Functor is a thing
--- you can "map" over, e.g. lists, Maybes.
---
--- TODO reword ^
---
--- Implement the function incrementAll that takes a functorial value
--- and increments each number inside by one.
+-- Ex 13: Implement the function incrementAll that takes a functor
+-- value containing numbers and increments each number inside by one.
 --
 -- Examples:
 --   incrementAll [1,2,3]     ==>  [2,3,4]
@@ -255,6 +257,9 @@ instance Functor Fun where
 --   True ||| False      ==> True
 --   undefined ||| True  ==> True
 --   False ||| undefined ==> an error!
+--
+-- NB! Do not use any library functions in your definition. Just
+-- pattern matching.
 
 (|||) :: Bool -> Bool -> Bool
 x ||| y
